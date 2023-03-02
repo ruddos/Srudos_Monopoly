@@ -1,154 +1,183 @@
 #include "Action.h"
-#include "Game.h"
+Pay2BankAction::Pay2BankAction(unsigned short sum)
+{
+	m_sum = sum;
+}
 
-using namespace std;
+void Pay2BankAction::invoke(Game& game, unsigned char ind)
+{
+	game.get_player(ind).pay(m_sum);
+}
 
-Pay2BankAction::Pay2BankAction(unsigned short sum) : m_sum(sum) {
+void EmptyAction::invoke(Game& game, unsigned char ind)
+{
+
+}
+GoToAction::GoToAction(unsigned char where)
+	:m_where(where)
+{
+
+}
+void GoToAction::invoke(Game& game, unsigned char ind)
+{
+	game.GoTo(m_where, ind);
+}
+void TakeChanceCard::invoke(Game& game, unsigned char ind)
+{
+	game.get_next_chance().invoke(game, ind);
+}
+void TakeCommunityCard::invoke(Game& game, unsigned char ind)
+{
+	game.get_next_com_chest().invoke(game, ind);
+}
+Move2Nearest::Move2Nearest(Tile::Tile_Type type)
+{
+	m_tile_type = type;
+}
+void Move2Nearest::invoke(Game& game, unsigned char ind)
+{
+	game.MoveUntil([=](const Tile& tile) {return tile.get_tile_type() == m_tile_type; }, ind);
+}
+
+void Go2JailAction::invoke(Game& game, unsigned char ind)
+{
+	game.GoToJail(ind);
+}
+
+void MoveAction::invoke(Game& game, unsigned char ind)
+{
+	game.MovePlayer(m_naskoka, 0, ind);
+}
+
+MoveAction::MoveAction(unsigned char naskoka)
+{
+	m_naskoka = naskoka;
+}
+
+void PrisonDenierAction::invoke(Game& game, unsigned char ind)
+{
+	game.SetPrisonDenied(ind);
+}
+
+GetFromBank::GetFromBank(unsigned short sum)
+{
+	m_sum = sum;
+}
+
+void GetFromBank::invoke(Game& game, unsigned char ind)
+{
+	game.get_player(ind).get(m_sum);
+}
+
+PayEverybodyAction::PayEverybodyAction(unsigned char sum) :
+	m_sum(sum)
+{
 
 }
 
-Recieve_Money::Recieve_Money(unsigned short sum) : m_sum(sum) {
-
-}
-
-MoneyFromPlayers::MoneyFromPlayers(unsigned int sum) : m_sum(sum) {
-
-}
-
-MoneyFromBank::MoneyFromBank(unsigned int sum) : m_sum(sum) {
-
-}
-
-MoveToNearest::MoveToNearest(Tile::Tile_Type tile_type) : m_tile_type(tile_type) {
-
-}
-
-Move::Move(unsigned char d1, unsigned char d2) : m_dice1(d1), m_dice2(d2) {
-
-}
-
-MoneyToPlayers::MoneyToPlayers(unsigned int sum) : m_sum(sum) {
-
-}
-
-MoveToRailroad::MoveToRailroad(unsigned char rail_index) : m_rail_index(rail_index) {
-
-}
-
-StreetAction::StreetAction(Street& street) : m_street_Tile(street) {
-
-}
-
-RailRoadAction::RailRoadAction(Railroad& railroad) : m_railroad_tile(railroad) {
-
-}
-
-ServiceAction::ServiceAction(Service& service) : m_service_tile(service) {
-
-}
-
-void ServiceAction::invoke(Game& game, unsigned char index) {
-	if (m_service_tile.get_OwnerShip() == nullptr)
-		return;
-	game.get_player(index).pay(m_service_tile.get_rent(game, index));
-	m_service_tile.get_OwnerShip()->claim_money(m_service_tile.get_rent(game, index));
-}
-
-void RailRoadAction::invoke(Game& game, unsigned char index) {
-	if (m_railroad_tile.get_OwnerShip() == nullptr)
-		return;
-	game.get_player(index).pay(m_railroad_tile.get_rent(game, index));
-	m_railroad_tile.get_OwnerShip()->claim_money(m_railroad_tile.get_rent(game, index));
-}
-
-EachHousesAction::EachHousesAction(unsigned char house, unsigned char hotel) : m_houses(house), m_hotels(hotel) {
-
-}
-
-void EachHousesAction::invoke(Game& game, unsigned char index) {
-	game.get_player(index).pay(game.how_many_houses(game.get_player(index), m_houses, m_hotels));
-}
-
-void StreetAction::invoke(Game& game, unsigned char index) {
-	if (m_street_Tile.get_OwnerShip() == nullptr || m_street_Tile.get_OwnerShip() == &game.get_player(index)) {
-		return;
-	}
-	game.get_player(index).pay(m_street_Tile.get_rent(game, index));
-}
-
-void MoveToRailroad::invoke(Game& game, unsigned char index) {
-	game.move_until(index, [=](const Tile& tile) {
-		return tile.get_tile_type() == Tile::Tile_Type::railroad;
-		});
-	game.get_player_tile(index);
-}
-
-void MoneyToPlayers::MoneyToPlayers::invoke(Game& game, unsigned char index) {
-	for (int i = 0; i < game.get_players_count(); ++i) {
-		if (i == index)
-			game.get_player(index).pay(m_sum);
-		else
-			game.get_player(index).claim_money(game.get_players_count() - 1 * m_sum);
+void PayEverybodyAction::invoke(Game& game, unsigned char ind)
+{
+	game.get_player(ind).pay(3 * m_sum);
+	for (int i = 0; i < game.GetPlayersAmount(); i++)
+	{
+		if (i != ind)
+			game.get_player(i).get(m_sum);
 	}
 }
 
-void EscapeFromJailAction::invoke(Game& game, unsigned char index) {
-	game.EscapeFromJail(index);
+GetFromEverybodyAction::GetFromEverybodyAction(unsigned char sum)
+	:m_sum(sum)
+{
+
 }
 
-void GoToJailAction::invoke(Game& game, unsigned char index) {
-	game.Player_to_Jail(index);
-}
-
-void MoveToNearest::invoke(Game& game, unsigned char index) {
-	game.move_until(index, [=](const Tile& tile) {
-		return tile.get_tile_type() == m_tile_type;
-		});
-}
-
-void Move::invoke(Game& game, unsigned char index) {
-	game.move_Player(index, m_dice1, m_dice2);
-}
-
-
-void MoneyFromPlayers::invoke(Game& game, unsigned char index) {
-	for (int i = 0; i < game.get_players_count(); ++i) {
-		if (i != index)
-			game.get_player(index).pay(m_sum);
-		else
-			game.get_player(index).claim_money(game.get_players_count() - 1 * m_sum);
+void GetFromEverybodyAction::invoke(Game& game, unsigned char ind)
+{
+	game.get_player(ind).get(3 * m_sum);
+	for (int i = 0; i < game.GetPlayersAmount(); i++)
+	{
+		if (i != ind)
+			game.get_player(i).pay(m_sum);
 	}
 }
 
-void MoneyFromBank::invoke(Game& game, unsigned char index) {
-	game.get_player(index).claim_money(m_sum);
-}
-
-void Empty_Action::invoke(Game& game, unsigned char curr_player) {
+StreetAction::StreetAction(Street& street) :
+	m_street(street)
+{
 
 }
 
-Move_Abs_Action::Move_Abs_Action(unsigned char to) : m_to(to)
+RailRoadAction::RailRoadAction(RailRoad& railroad) :
+	m_railroad(railroad)
 {
 }
 
-void Move_Abs_Action::invoke(Game& game, unsigned char curr_player) {
-	game.move_Player_abs(curr_player, m_to);
+ServiceAction::ServiceAction(Service& service) :
+	m_service(service)
+{
 }
 
-void Take_Chance_Card::invoke(Game& game, unsigned char curr_player) {
-	game.get_next_chance_card().invoke(game, curr_player);
+void StreetAction::invoke(Game& game, unsigned char ind)
+{
+	if (m_street.get_ownership() != nullptr)
+	{
+		if (m_street.get_ownership() != &game.get_player(ind))
+		{
+			game.get_player(ind).pay(m_street.get_rent(game, ind));
+			m_street.get_ownership()->get(m_street.get_rent(game, ind));
+		}
+	}
 }
 
-void Take_Community_Chest_Card::invoke(Game& game, unsigned char curr_player) {
-	game.get_next_community_chest_card().invoke(game, curr_player);
+void RailRoadAction::invoke(Game& game, unsigned char ind)
+{
+	if (m_railroad.get_ownership() != nullptr)
+	{
+		if (m_railroad.get_ownership() != &game.get_player(ind))
+		{
+			unsigned short sum = game.RailroadsCount(game.get_player(ind));
+			game.get_player(ind).pay(50 * sum);
+			m_railroad.get_ownership()->get(50 * sum);
+		}
+	}
 }
 
-void Recieve_Money::invoke(Game& game, unsigned char curr_player) {
-	game.get_player(curr_player).claim_money(m_sum);
+void ServiceAction::invoke(Game& game, unsigned char ind)
+{
+	if (m_service.get_ownership() != nullptr)
+	{
+		if (m_service.get_ownership() != &game.get_player(ind))
+		{
+			pair<unsigned short, unsigned short>p = game.throw_dices();
+			unsigned short sum = p.first + p.second;
+			if (game.ServiceCount(*m_service.get_ownership()) == 1)
+				sum *= 4;
+			else
+				sum *= 10;
+			game.get_player(ind).pay(sum);
+			m_service.get_ownership()->get(sum);
+		}
+	}
 }
 
+void Go2NearestRailroadPayTwiceAction::invoke(Game& game, unsigned char ind)
+{
+	game.MoveUntil([=](const Tile& tile) {return tile.get_tile_type() == Tile::Tile_Type::RailRoad; }, ind);
+	if (dynamic_cast<RailRoad*>(&game.get_tile(ind))->get_ownership() != nullptr)
+	{
+		game.get_player(ind).pay(game.RailroadsCount(*dynamic_cast<RailRoad*>(&game.get_tile(ind))->get_ownership()) * 100);
+		dynamic_cast<RailRoad*>(&game.get_tile(ind))->get_ownership()->get(game.RailroadsCount(*dynamic_cast<RailRoad*>(&game.get_tile(ind))->get_ownership()) * 100);
+	}
+}
 
-void Pay2BankAction::invoke(Game& game, unsigned char curr_player) {
-	game.get_player(curr_player).pay(m_sum);
+void PayForHousesActionCommun::invoke(Game& game, unsigned char ind)
+{
+	pair<unsigned short, unsigned short>p = game.CountOfHousesAndHotels(game.get_player(ind));
+	game.get_player(ind).pay(p.first * 40 + p.second * 115);
+}
+
+void PayForHousesActionChance::invoke(Game& game, unsigned char ind)
+{
+	pair<unsigned short, unsigned short>p = game.CountOfHousesAndHotels(game.get_player(ind));
+	game.get_player(ind).pay(p.first * 25 + p.second * 100);
 }

@@ -1,97 +1,129 @@
 #include "Tile.h"
 #include "Action.h"
-#include "Game.h"
 
-PropertyTile::PropertyTile(Tile_Type Type, unsigned char Price, string Caption) : Tile(Type), m_Price(Price), m_Ownership(nullptr), m_Caption(Caption), m_Pledge(false) {
+using namespace std;
 
-}
-
-Street::Street(StreetColors color, const string& caption, const vector<unsigned short>& rent, const unsigned short& price) : PropertyTile(Tile_Type::street, price, caption),
-m_Color(color), m_Rent(rent), m_action(new StreetAction(*this))
+Tile::Tile(Tile_Type type) :
+	m_tile_type(type)
 {
 }
 
-Player* PropertyTile::get_OwnerShip() {
-	return m_Ownership;
-};
-
-bool PropertyTile::get_Pledge() {
-	return m_Pledge;
+Tile::Tile_Type Tile::get_tile_type(void) const
+{
+	return m_tile_type;
 }
 
-unsigned char PropertyTile::get_Price() {
-	return m_Price;
+Street::Street(const StreetColors color, const std::string& caption, const vector<unsigned short>& rent, const unsigned short price) :
+	PropertyTile(price, Tile_Type::Street, caption),
+	m_houses(0),
+	m_rent(rent),
+	m_action(new StreetAction(*this)),
+	m_color_type(color)
+{
 }
 
-unsigned short Street::get_rent(Game& game, unsigned char player_index) {
-	bool is_captured = game.is_street_captured(game.get_player(player_index), m_Color);
-	if (!get_Pledge()) {
-		if (m_Houses > 0)
-			return m_Rent[m_Houses];
+RailRoad::RailRoad(const std::string& caption, const unsigned short price) :
+	PropertyTile(price, Tile_Type::RailRoad, caption),
+	m_action(new RailRoadAction(*this))
+{
+}
 
-		else if (is_captured)
-			return m_Rent[0] * 2;
+Service::Service(const std::string& caption, const unsigned short price) :
+	PropertyTile(price, Tile_Type::Service, caption),
+	m_action(new ServiceAction(*this))
+{
+}
+Action& Street::get_action(void)
+{
+	return *m_action;
+}
+Action& ActionTile::get_action(void)
+{
+	return *m_action;
+}
 
-		else
-			return m_Rent[0];
+Action& RailRoad::get_action(void)
+{
+	return *m_action;
+}
+
+Action& Service::get_action(void)
+{
+	return *m_action;
+}
+
+ActionTile::ActionTile(Tile_Type type, Action* action) :
+	Tile(type),
+	m_action(action)
+{
+
+}
+
+
+unsigned short Street::get_rent(Game& game, unsigned char ind)
+{
+	if (!(get_pledge()))
+	{
+		if (m_houses == 0)
+		{
+			if (game.IsStreetCaptured(game.get_player(ind), m_color_type))
+				return m_rent[0] * 2;
+			else
+				return m_rent[0];
+		}
+		return m_rent[m_houses];
 	}
-	return 0;
+	else
+		return 0;
 }
 
-Street::StreetColors Street::get_street_color() {
-	return m_Color;
+Street::StreetColors Street::get_color_type(void)const
+{
+	return m_color_type;
 }
 
-unsigned char Street::get_houses_count() {
-	return m_Houses;
+
+unsigned short Street::get_houses()
+{
+	return m_houses;
 }
 
-Railroad::Railroad(string caption) : PropertyTile(Tile_Type::railroad, 200, caption),
-m_Rent(100), m_action(new RailRoadAction(*this))
+Player* PropertyTile::get_ownership()
+{
+	return m_ownership;
+}
+
+PropertyTile::PropertyTile(unsigned short price, Tile_Type type, std::string caption)
+	:Tile(type),
+	m_price(price),
+	m_caption(caption),
+	m_tile_type(type),
+	m_ownership(nullptr),
+	m_pledge(false)
 {
 }
 
-unsigned short Railroad::get_rent(Game& game, unsigned char player_index) {
-	if (!get_Pledge() && get_OwnerShip() != nullptr && get_OwnerShip() != &game.get_player(player_index)) {
-		unsigned char n = game.how_many_captured(game.get_player(player_index));
-		return m_Rent * n;
-	}
-	return 0;
-}
-
-Service::Service(string caption) : PropertyTile(Tile_Type::service, 150, caption), m_action(new ServiceAction(*this))
+bool PropertyTile::get_pledge()
 {
+	return m_pledge;
 }
 
-unsigned short Service::get_rent(Game& game, unsigned char player_index) {
-	if (!get_Pledge())
-		return game.service_rent(game.get_player(player_index));
-	return 0;
+unsigned short PropertyTile::get_price()
+{
+	return m_price;
 }
 
-Action_Tile::Action_Tile(Action* action, Tile::Tile_Type type) : Tile(type), m_action(action) {
+void PropertyTile::set_ownership(Player& p)
+{
+	(*this).m_ownership = &p;
 }
 
-Tile::Tile(Tile::Tile_Type type) : m_type(type) {
-
+void Street::set_houses(unsigned short h)
+{
+	m_houses = h;
 }
 
-Tile::Tile_Type Tile::get_tile_type(void) const {
-	return m_type;
-}
-
-Action& Street::get_Action(void) {
-	return *m_action;
-}
-
-Action& Railroad::get_Action(void) {
-	return *m_action;
-}
-
-Action& Service::get_Action(void) {
-	return *m_action;
-}
-
-Action& Action_Tile::get_Action(void) {
-	return *m_action;
+Street::StreetColors Street::get_color() const
+{
+	return m_color_type;
 }

@@ -1,15 +1,16 @@
 #pragma once
-
-using namespace std;
-
-class Player {
+#include "AI.h"
+class Player
+{
 public:
 	Player();
-
+	const AI& get_AI();
 	void pay(unsigned short sum);
-	void claim_money(unsigned short sum);
-	short get_money();
-
+	void get(unsigned short sum);
+	int skokadenegnischeta();
+	unsigned char get_pos();
 private:
-	short m_money = 1500;
+	unique_ptr<const AI> m_AI;
+	int m_money;
+	unsigned char m_pos;
 };

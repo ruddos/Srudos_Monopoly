@@ -1,19 +1,31 @@
 #include "Player.h"
-
-using namespace std;
-
-Player::Player() {
-}
-
 void Player::pay(unsigned short sum)
 {
 	m_money -= sum;
 }
+void Player::get(unsigned short sum)
+{
+	m_money += sum;
+}
+Player::Player() :
+	m_money(1500),
+	m_AI(new First_AI(*this)),
+	m_pos(0)
+{
 
-short Player::get_money() {
+}
+
+int Player::skokadenegnischeta()
+{
 	return m_money;
 }
 
-void Player::claim_money(unsigned short sum) {
-	m_money += sum;
+const AI& Player::get_AI()
+{
+	return *m_AI;
+}
+
+unsigned char Player::get_pos()
+{
+	return m_pos;
 }

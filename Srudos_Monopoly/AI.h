@@ -1,24 +1,34 @@
 #pragma once
-#include  "Tile.h"
-
-class AI {
+#include"Tile.h"
+class AI
+{
 public:
-	virtual void shouldbuy(PropertyTile& tile) = 0;
-	virtual bool jail_break(void) = 0;
-	virtual bool shouldbuild(Street& street) = 0;
-	virtual void pledge(void) = 0;
-
+	AI(Player&);
+	Player& get_player() const;
+	virtual bool should_buy(PropertyTile&) const = 0;
+	virtual bool jail_break(void) const = 0;
+	virtual bool should_build(Street&) const = 0;
+	virtual void pledge(PropertyTile&) const = 0;
 private:
+	Player& m_player;
 };
 
-class PlayerAI {
+class First_AI :public AI
+{
 public:
-	PlayerAI(Player& player);
-	virtual bool shouldbuy(PropertyTile& tile);
-	virtual bool jail_break(void) = 0;
-	virtual bool shouldbuild(Street& street) = 0;
-	virtual void pledge(void) = 0;
+	First_AI(Player&);
+	virtual bool should_buy(PropertyTile&) const;
+	virtual bool jail_break(void) const;
+	virtual bool should_build(Street&) const;
+	virtual void pledge(PropertyTile&) const;
+};
 
-private:
-	Player& m_Player;
+class Second_AI :public AI
+{
+public:
+	Second_AI(Player&);
+	virtual bool should_buy(PropertyTile&) const;
+	virtual bool jail_break(void) const;
+	virtual bool should_build(Street&) const;
+	virtual void pledge(PropertyTile&) const;
 };

@@ -1,167 +1,139 @@
 #pragma once
-#include <iostream>
-#include <vector>
-#include "Tile.h"
-
-using namespace std;
-
-class Game;
-
-class Action {
+#include "Player.h"
+#include "Game.h"
+class Action
+{
 public:
-	virtual void invoke(Game& game, unsigned char curr_player) = 0;
+	virtual void invoke(Game& game, unsigned char ind) = 0;
 };
-
-class StreetAction : public Action {
+class Pay2BankAction :public Action
+{
 public:
-	StreetAction(Street& street_tile);
-	virtual void invoke(Game& game, unsigned char curr_player);
-
+	Pay2BankAction(unsigned short sum);
+	virtual void invoke(Game& game, unsigned char ind);
 private:
-	Street& m_street_Tile;
+	unsigned short m_sum;
 };
-
-class RailRoadAction : public Action {
+class EmptyAction :public Action
+{
 public:
-	RailRoadAction(Railroad& railroad_tile);
-	virtual void invoke(Game& game, unsigned char curr_player);
-
-private:
-	Railroad& m_railroad_tile;
-};
-
-class ServiceAction : public Action {
-public:
-	ServiceAction(Service& service_tile);
-	virtual void invoke(Game& game, unsigned char curr_player);
-
-private:
-	Service& m_service_tile;
-};
-
-class EachHousesAction : public Action {
-public:
-	EachHousesAction(unsigned char house, unsigned char hotel);
-	virtual void invoke(Game& game, unsigned char curr_player);
-
-private:
-	unsigned char m_houses;
-	unsigned char m_hotels;
-};
-class Empty_Action : public Action {
-public:
-	virtual void invoke(Game& game, unsigned char curr_player);
-
+	virtual void invoke(Game& game, unsigned char ind);
 private:
 };
-
-class GoToJailAction : public Action {
+class GoToAction :public Action
+{
 public:
-	virtual void invoke(Game& game, unsigned char curr_player);
-
+	GoToAction(unsigned char where);
+	virtual void invoke(Game& game, unsigned char ind);
 private:
-
+	unsigned char m_where;
 };
-
-class EscapeFromJailAction : public Action {
+class TakeChanceCard : public Action
+{
 public:
-	virtual void invoke(Game& game, unsigned char curr_player);
-
-private:
-
+	virtual void invoke(Game& game, unsigned char ind);
 };
-
-class MoveToRailroad : public Action {
+class TakeCommunityCard : public Action
+{
 public:
-	MoveToRailroad(unsigned char rail_index);
-	virtual void invoke(Game& game, unsigned char curr_player);
-
-private:
-	unsigned char m_rail_index;
+	virtual void invoke(Game& game, unsigned char ind);
 };
-
-class MoveToNearest : public Action {
+class Move2Nearest :public Action
+{
 public:
-	MoveToNearest(Tile::Tile_Type tile_type);
-	virtual void invoke(Game& game, unsigned char curr_player);
-
+	Move2Nearest(Tile::Tile_Type type);
+	virtual void invoke(Game& game, unsigned char ind);
 private:
 	Tile::Tile_Type m_tile_type;
 };
 
-class Move : public Action {
+class Go2JailAction :public Action
+{
 public:
-	Move(unsigned char dice1, unsigned char dice2);
-	virtual void invoke(Game& game, unsigned char curr_player);
-
-private:
-	unsigned char m_dice1;
-	unsigned char m_dice2;
+	virtual void invoke(Game& game, unsigned char ind);
 };
 
-class Move_Abs_Action : public Action {
+class MoveAction :public Action
+{
 public:
-	Move_Abs_Action(unsigned char to);
-	virtual void invoke(Game& game, unsigned char curr_player);
-
+	MoveAction(unsigned char naskoka);
+	virtual void invoke(Game& game, unsigned char ind);
 private:
-	unsigned char m_to;
+	unsigned char m_naskoka;
 };
 
-class Take_Chance_Card : public Action {
+class PrisonDenierAction :public Action
+{
 public:
-	virtual void invoke(Game& game, unsigned char curr_player);
-
-private:
-
+	virtual void invoke(Game& game, unsigned char ind);
 };
 
-class Take_Community_Chest_Card : public Action {
+
+class GetFromBank :public Action
+{
 public:
-	virtual void invoke(Game& game, unsigned char curr_player);
-
-private:
-
-};
-
-class MoneyFromPlayers : public Action {
-public:
-	MoneyFromPlayers(unsigned int sum);
-	virtual void invoke(Game& game, unsigned char index);
-private:
-	unsigned int m_sum;
-};
-
-class MoneyToPlayers : public Action {
-public:
-	MoneyToPlayers(unsigned int sum);
-	virtual void invoke(Game& game, unsigned char index);
-private:
-	unsigned int m_sum;
-};
-
-class MoneyFromBank : public Action {
-public:
-	MoneyFromBank(unsigned int sum);
-	virtual void invoke(Game& game, unsigned char index);
-private:
-	unsigned int m_sum;
-};
-
-class Recieve_Money : public Action {
-public:
-	Recieve_Money(unsigned short sum);
-
-	virtual void invoke(Game& game, unsigned char curr_player);
+	GetFromBank(unsigned short sum);
+	virtual void invoke(Game& game, unsigned char ind);
 private:
 	unsigned short m_sum;
 };
 
-class Pay2BankAction : public Action {
+class PayEverybodyAction :public Action
+{
 public:
-	Pay2BankAction(unsigned short sum);
-
-	virtual void invoke(Game& game, unsigned char curr_player);
+	PayEverybodyAction(unsigned char sum);
+	virtual void invoke(Game& game, unsigned char ind);
 private:
-	unsigned short m_sum;
+	unsigned char m_sum;
+};
+
+class GetFromEverybodyAction :public Action
+{
+public:
+	GetFromEverybodyAction(unsigned char sum);
+	virtual void invoke(Game& game, unsigned char ind);
+private:
+	unsigned char m_sum;
+};
+
+class StreetAction :public Action
+{
+public:
+	StreetAction(Street& street);
+	virtual void invoke(Game& game, unsigned char ind);
+private:
+	Street& m_street;
+};
+
+class RailRoadAction :public Action
+{
+public:
+	RailRoadAction(RailRoad& railroad);
+	virtual void invoke(Game& game, unsigned char ind);
+private:
+	RailRoad& m_railroad;
+};
+
+class ServiceAction :public Action
+{
+public:
+	ServiceAction(Service& service);
+	virtual void invoke(Game& game, unsigned char ind);
+private:
+	Service& m_service;
+};
+
+class Go2NearestRailroadPayTwiceAction :public Action
+{
+	virtual void invoke(Game& game, unsigned char ind);
+};
+
+class PayForHousesActionCommun :public Action
+{
+	virtual void invoke(Game& game, unsigned char ind);
+};
+
+class PayForHousesActionChance :public Action
+{
+	virtual void invoke(Game& game, unsigned char ind);
 };

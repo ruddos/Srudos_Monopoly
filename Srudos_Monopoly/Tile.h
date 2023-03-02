@@ -1,108 +1,113 @@
 #pragma once
 #include <vector>
-#include <iostream>
-#include "Player.h"
+#include <memory>
+#include <string>
+
 
 using namespace std;
 
 class Action;
 class Game;
+class Player;
 
-class Tile {
+class Tile
+{
 public:
-	enum Tile_Type {
-		street,
-		start,
-		community_chest,
-		tax,
-		railroad,
-		chance,
-		jail,
-		service,
-		free_parking,
-		go_to_jail
+	enum class Tile_Type
+	{
+		Street,
+		Start,
+		CommChest,
+		Tax,
+		RailRoad,
+		Chance,
+		Jail,
+		Service,
+		FreeParking,
+		GoToJail,
 	};
-
-	virtual Action& get_Action(void) = 0;
+	virtual Action& get_action(void) = 0;
 	Tile_Type get_tile_type(void) const;
 
 protected:
-	Tile(Tile_Type t);
-
+	Tile(Tile_Type type);
 private:
-	Tile_Type m_type;
+	const Tile_Type m_tile_type;
 };
 
-class PropertyTile : public Tile {
+class ActionTile :public Tile
+{
 public:
-	Player* get_OwnerShip();
-	bool get_Pledge();
-	unsigned char get_Price();
-
-protected:
-	PropertyTile(Tile_Type Type, unsigned char Price, string Caption);
-
+	ActionTile(Tile_Type type, Action* action);
+	virtual Action& get_action(void);
 private:
-	unsigned char m_Price;
-	Player* m_Ownership;
-	string m_Caption;
-	bool m_Pledge;
+	std::unique_ptr<Action>m_action;
 };
 
-class Action_Tile : public Tile {
+class PropertyTile :public Tile
+{
 public:
-	Action_Tile(Action* action, Tile_Type type);
-
-	virtual Action& get_Action(void);
-
+	Player* get_ownership();
+	bool get_pledge();
+	unsigned short get_price();
+	PropertyTile(unsigned short price, Tile_Type type, std::string caption);
+	void set_ownership(Player& p);
 private:
-	unique_ptr<Action> m_action;
+	unsigned short m_price;
+	Player* m_ownership;
+	bool m_pledge;
+	std::string m_caption;
+	const Tile_Type m_tile_type;
+
 };
 
-class Railroad : public PropertyTile {
+class Street :public PropertyTile
+{
 public:
-	Railroad(string Caption);
-	unsigned short get_rent(Game& game, unsigned char player_index);
-	virtual Action& get_Action(void);
 
-private:
-	const unsigned short m_Rent;
-	unique_ptr<Action> m_action;
-};
-
-class Service : public PropertyTile {
-public:
-	Service(string caption);
-	unsigned short get_rent(Game& game, unsigned char player_index);
-	virtual Action& get_Action(void);
-
-private:
-	unique_ptr<Action> m_action;
-};
-
-class Street : public PropertyTile {
-public:
-	virtual Action& get_Action(void);
-
-	enum StreetColors {
-		brown,
-		blue,
-		pink,
-		orange,
-		red,
-		yellow,
-		green,
-		dark_blue
+	enum StreetColors
+	{
+		Brown,
+		Blue,
+		Pink,
+		Orange,
+		Red,
+		Yellow,
+		Green,
+		DarkBlue,
 	};
 
-	Street(StreetColors color, const string& caption, const vector<unsigned short>& rent, const unsigned short& price);
-	unsigned short get_rent(Game& game, unsigned char player_index);
-	unsigned char get_houses_count();
-	Street::StreetColors get_street_color();
+	Street(const StreetColors color, const std::string& caption, const vector<unsigned short>& rent, const unsigned short price);
+
+	virtual Action& get_action(void);
+
+	unsigned short get_rent(Game& game, unsigned char ind);
+	StreetColors get_color_type(void)const;
+	unsigned short get_houses();
+	void set_houses(unsigned short h);
+	StreetColors get_color() const;
 
 private:
-	const StreetColors m_Color;
-	const vector<unsigned short> m_Rent;
-	unsigned char m_Houses;
-	unique_ptr<Action> m_action;
+	unsigned char m_houses;
+	vector<unsigned short> m_rent;
+	unique_ptr<Action>m_action;
+	const StreetColors m_color_type;
+};
+
+class RailRoad :public PropertyTile
+{
+public:
+	RailRoad(const std::string& caption, const unsigned short price);
+	virtual Action& get_action(void);
+private:
+	unique_ptr<Action>m_action;
+};
+
+class Service :public PropertyTile
+{
+public:
+	Service(const std::string& caption, const unsigned short price);
+	virtual Action& get_action(void);
+private:
+	unique_ptr<Action>m_action;
 };
